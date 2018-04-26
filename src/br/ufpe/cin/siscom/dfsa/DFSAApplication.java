@@ -2,30 +2,19 @@ package br.ufpe.cin.siscom.dfsa;
 
 import java.io.IOException;
 
+import br.ufpe.cin.siscom.dfsa.thread.DFSASimulator;
+import br.ufpe.cin.siscom.dfsa.util.Logger;
+
 public class DFSAApplication {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		long startTime = System.currentTimeMillis();
-
-		Thread.sleep(90000);
-
+		DFSASimulator simulator = new DFSASimulator(64, 100, 100, 2000);
+		Thread t = new Thread(simulator);
+		t.start();
+		t.join();
 		long endTime = System.currentTimeMillis() - startTime;
-
-		System.out.print("Program finished running in: ");
-
-		long hours = ((endTime / (1000 * 60 * 60)) % 24);
-		long minutes = ((endTime / (1000 * 60)) % 60);
-		long seconds = ((endTime / 1000) % 60);
-		
-		if (hours > 0) {			
-			System.out.print(hours+" h");
-		}
-		if (minutes > 0) {			
-			System.out.print(minutes+" min");
-		}
-		if (seconds > 0) {			
-			System.out.print(seconds+" s");
-		}
+		Logger.logFinishTime("Program", endTime);
 	}
 
 }
