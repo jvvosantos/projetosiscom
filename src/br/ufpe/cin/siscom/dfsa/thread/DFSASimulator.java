@@ -1,5 +1,8 @@
 package br.ufpe.cin.siscom.dfsa.thread;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import br.ufpe.cin.siscom.dfsa.domain.Result;
 import br.ufpe.cin.siscom.dfsa.util.Logger;
 import br.ufpe.cin.siscom.dfsa.util.RNG;
@@ -17,34 +20,42 @@ public class DFSASimulator implements Runnable {
 	private int colision;
 	private int success;
 	private int empty;
-
+	
+	private List<Result> results;
+	
 	public DFSASimulator(int frameSize, int numTags, int increaseStep, int simulations) {
 		this.frameSize = frameSize;
-		this.frame = new int[frameSize];
 		this.numTags = numTags;
 		this.increaseStep = increaseStep;
 		this.simulations = simulations;
-		this.colision = 0;
+		this.results = new ArrayList<Result>();
+		this.refresh();
 	}
 
 	public void simulate() {
-		for (int i = 0; i < frame.length; i++) {
-			this.frame[i] = RNG.generateRandomInteger(numTags);
+		int slot = 0;
+		for (int i = numTags; i > 0; i--) {
+			slot = RNG.generateRandomInteger(frameSize);
+			this.frame[slot]++;
 		}
 	}
 
 	public void checkForColisions() {
 		for (int i : frame) {
-			if (i == 1) {
-				this.success++;
-			}
-			else if (i == 0) {
-				this.empty++;
-			}
-			else {
+			if (i > 1) {
 				this.colision++;
 			}
+			else if (i == 1) {
+				this.success++;
+			}
+			else {
+				this.empty++;
+			}
 		}
+	}
+	
+	public void generateResult(){
+		results.add(new Result(colision, empty, success));
 	}
 
 	@Override
@@ -55,13 +66,21 @@ public class DFSASimulator implements Runnable {
 		for (int i = simulations; i > 0; i--) {
 			this.simulate();
 			this.checkForColisions();
+			this.generateResult();
+			this.refresh();
 		}
-		Result result = new Result(colision, empty, success);
 		long endTime = System.currentTimeMillis() - startTime;
 		
-		Logger.log(result);
+		Logger.log(this.results);
 		Logger.log("Simulations ran: "+simulations);
 		Logger.logFinishTime("Simulation", endTime);
 	}
 
+	
+	private void refresh(){
+		this.colision = 0;
+		this.success = 0;
+		this.empty = 0;
+		this.frame = new int[frameSize];
+	}
 }

@@ -1,5 +1,7 @@
 package br.ufpe.cin.siscom.dfsa.util;
 
+import java.util.Arrays;
+
 public class Logger {
 	
 	/**
@@ -24,6 +26,14 @@ public class Logger {
 			i++;
 		}
 		System.out.println();
+	}
+	
+	/**
+	 * Logs an array, casting it to a List
+	 * @author jvos
+	 * */
+	public static void logArray(int[] array) {
+		System.out.println(Arrays.toString(array));
 	}
 	
 	/**

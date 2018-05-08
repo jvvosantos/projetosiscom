@@ -7,7 +7,7 @@ public class RNG {
 	private static Random rngesus = new Random();
 
 	public static int generateRandomInteger(int max) {
-		return rngesus.nextInt(max+1);
+		return rngesus.nextInt(max);
 	}
 
 }
