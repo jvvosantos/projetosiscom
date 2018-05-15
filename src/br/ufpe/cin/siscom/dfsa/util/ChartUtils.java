@@ -20,8 +20,9 @@ public class ChartUtils {
 	 * @param xMax Max index of X Axis
 	 * @param yMax Max index of Y Axis
 	 * @author jvos
+	 * @param estimatorName 
 	 * */
-	public static XYChart createChart(String xTitle, String yTitle, double xMax, double yMax, Result result) throws IOException {
+	public static XYChart createChart(String xTitle, String yTitle, double xMax, double yMax, double[] x, double[] y, String estimatorName) throws IOException {
 		
 		XYChart chart = new XYChartBuilder().xAxisTitle(xTitle).yAxisTitle(yTitle).width(600).height(400).build();
 		chart.getStyler().setYAxisMin(0.0);
@@ -30,20 +31,8 @@ public class ChartUtils {
 		chart.getStyler().setXAxisMax(xMax);
 		
 		//TODO Método de colocar séries no gráfico
-		double[] x = {111, 333};
-		double[] y = {532, 234};
-		XYSeries series = chart.addSeries("Vog", x, y);
+		XYSeries series = chart.addSeries(estimatorName, x, y);
 		series.setMarker(SeriesMarkers.SQUARE);
-		
-		x = new double[] {200, 500};
-		y = new double[] {300, 600};
-		chart.addSeries("Eom-lee", x, y);
-		series.setMarker(SeriesMarkers.CIRCLE);
-	
-		x = new double[] {876, 444};
-		y = new double[] {321, 241};
-		chart.addSeries("pitoca", x, y);
-		series.setMarker(SeriesMarkers.DIAMOND);
 		
 		return chart;
 	}
