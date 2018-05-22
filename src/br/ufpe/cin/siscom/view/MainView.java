@@ -115,8 +115,8 @@ public class MainView extends JFrame {
 		lblIncreaseStep.setBounds(153, 40, 118, 15);
 		contentPane.add(lblIncreaseStep);
 		
-		lblSteps = new JLabel("Steps");
-		lblSteps.setBounds(285, 0, 70, 83);
+		lblSteps = new JLabel("Max number of tags");
+		lblSteps.setBounds(285, 0, 140, 83);
 		contentPane.add(lblSteps);
 		
 		JLabel lblEstimator = new JLabel("Estimator");

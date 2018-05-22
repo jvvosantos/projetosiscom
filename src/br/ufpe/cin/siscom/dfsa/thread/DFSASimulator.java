@@ -30,6 +30,7 @@ public class DFSASimulator implements Runnable {
 	private List<Double> numSlotsEmpty = new ArrayList<>();
 	private List<Double> numSlotsColision = new ArrayList<>();
 	private List<Double> identificationTime = new ArrayList<>();
+	private List<Double> eficiency = new ArrayList<>();
 
 	public DFSASimulator(int numTags, int increaseStep, int maxNumTags, Estimator estimator) {
 		this.frameSize = 64;
@@ -96,6 +97,7 @@ public class DFSASimulator implements Runnable {
 			this.numSlotsEmpty.add((double) (totalEmpty/this.loops));
 			this.numSlotsColision.add((double) (totalCollision/this.loops));
 			this.identificationTime.add((double) totalTime);
+			this.eficiency.add((totalSuccess/(double)totalSlots)*100);
 			this.tags.add((double) numTags);
 		}
 	}
@@ -113,8 +115,12 @@ public class DFSASimulator implements Runnable {
 			XYChart chartColision = ChartUtils.createChart("Number of Tags", "Colisions Slots", numTags, 1900, this.tags.stream().mapToDouble(d -> d).toArray(), this.numSlotsColision.stream().mapToDouble(d -> d).toArray(), estimator.getName());
 			XYChart chartEmpty = ChartUtils.createChart("Number of Tags", "Empty Slots", numTags, 1200, this.tags.stream().mapToDouble(d -> d).toArray(), this.numSlotsEmpty.stream().mapToDouble(d -> d).toArray(), estimator.getName());
 			XYChart chartSlots = ChartUtils.createChart("Number of Tags", "Number of Slots", numTags, 3600, this.tags.stream().mapToDouble(d -> d).toArray(), this.numSlots.stream().mapToDouble(d -> d).toArray(), estimator.getName());
-			XYChart chartTime = ChartUtils.createChart("Number of Tags", "Avg. Identification Time", numTags, 1000, this.tags.stream().mapToDouble(d -> d).toArray(), this.identificationTime.stream().mapToDouble(d -> d).toArray(), estimator.getName());
-			List<XYChart> charts = Arrays.asList(chartColision, chartEmpty, chartSlots, chartTime);
+			XYChart chartTime = ChartUtils.createChart("Number of Tags", "Avg. Identification Time", numTags, 300, this.tags.stream().mapToDouble(d -> d).toArray(), this.identificationTime.stream().mapToDouble(d -> d).toArray(), estimator.getName());
+			XYChart chartEficiency = ChartUtils.createChart("Number of Tags", "Eficiency", numTags, 40, this.tags.stream().mapToDouble(d -> d).toArray(), this.eficiency.stream().mapToDouble(d -> d).toArray(), estimator.getName());
+
+			List<XYChart> charts = Arrays.asList(chartColision, chartEmpty, chartSlots, chartEficiency);
+			List<XYChart> charts2 = Arrays.asList(chartTime);
+			
 			ChartUtils.displayChartList(charts);
 		} catch (IOException e) {
 			e.printStackTrace();
