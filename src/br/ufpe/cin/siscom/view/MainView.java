@@ -15,7 +15,6 @@ import javax.swing.border.EmptyBorder;
 import br.ufpe.cin.siscom.dfsa.estimator.EomLee;
 import br.ufpe.cin.siscom.dfsa.estimator.Estimator;
 import br.ufpe.cin.siscom.dfsa.estimator.LowerBound;
-import br.ufpe.cin.siscom.dfsa.estimator.Q;
 import br.ufpe.cin.siscom.dfsa.thread.DFSASimulator;
 
 public class MainView extends JFrame {
@@ -80,15 +79,9 @@ public class MainView extends JFrame {
 					else if (textField_3.getText().equalsIgnoreCase("Eom Lee")) {
 						estimator = new EomLee();
 					}
-					else if (textField_3.getText().equalsIgnoreCase("q")) {
-						estimator = new Q(tags, increaseStep, simulations);
-					}
 					
 					if (estimator == null) {
 						JOptionPane.showMessageDialog(null, "Invalid estimator");
-					}
-					else if (estimator instanceof Q) {
-						(new Thread(new Q(tags, increaseStep, simulations))).start();
 					}
 					else {						
 						(new Thread(new DFSASimulator(tags, increaseStep, simulations, estimator))).start();

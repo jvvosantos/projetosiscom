@@ -9,8 +9,6 @@ import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
-import br.ufpe.cin.siscom.dfsa.domain.Result;
-
 public class ChartUtils {
 
 	/**
