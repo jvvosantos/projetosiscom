@@ -30,7 +30,7 @@ public class EomLee implements Estimator{
 				
 			} while( Math.abs(last_gama - gama) >= threshold );
 
-			return (int) (gama * collision);
+			return (int) Math.ceil(gama * collision);
 		}
 	}
 

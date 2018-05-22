@@ -6,9 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.knowm.xchart.XYChart;
-import org.knowm.xchart.internal.chartpart.Chart;
 
-import br.ufpe.cin.siscom.dfsa.domain.Result;
 import br.ufpe.cin.siscom.dfsa.estimator.Estimator;
 import br.ufpe.cin.siscom.dfsa.util.ChartUtils;
 import br.ufpe.cin.siscom.dfsa.util.Logger;
@@ -16,99 +14,92 @@ import br.ufpe.cin.siscom.dfsa.util.RNG;
 
 public class DFSASimulator implements Runnable {
 
-	private int[] frame;
 	private int frameSize;
+	private int loops;
 
 	private int numTags;
-	private int identifiedTags;
 	private int increaseStep;
-
-	private int simulations;
-
-	private int colision;
-	private int success;
-	private int empty;
-
-	private List<Result> results;
+	private int maxNumTags;
 
 	private Estimator estimator;
-	
+
+
+	// Resultados
 	private List<Double> tags = new ArrayList<>(); 
-	
 	private List<Double> numSlots = new ArrayList<>();
 	private List<Double> numSlotsEmpty = new ArrayList<>();
 	private List<Double> numSlotsColision = new ArrayList<>();
+	private List<Double> identificationTime = new ArrayList<>();
 
-	public DFSASimulator(int numTags, int increaseStep, int simulations, Estimator estimator) {
+	public DFSASimulator(int numTags, int increaseStep, int maxNumTags, Estimator estimator) {
 		this.frameSize = 64;
+		this.loops = 2000;
 		this.numTags = numTags;
 		this.increaseStep = increaseStep;
-		this.simulations = simulations;
-		this.results = new ArrayList<Result>();
+		this.maxNumTags = maxNumTags;
 		this.estimator = estimator;
-		this.identifiedTags = 0;
-		this.frame = new int[frameSize];
 	}
 
 	public void simulate() {
-		int slot = 0;
-		int colision = 0;
-		int empty = 0;
-		int success = 0;
+		for (; numTags <= maxNumTags; numTags+=increaseStep) {
+			int totalSlots = 0;
+			int totalCollision = 0;
+			int totalEmpty = 0;
+			int totalSuccess = 0;
+			long totalTime = 0;
 
-		// Identification phase
-		for (int runs = 0; runs < simulations; runs++) {
-			for (int loops = 0; loops < 2000; loops++) {
-				while(identifiedTags < numTags) {
+			for (int loops = 0; loops < this.loops; loops++) {
+				int success;
+				int colision;
+				int empty;
+				int chosenSlot;
+				int	frameSize = this.frameSize;
+				int	tagsRemaining = numTags;
 
-					for (int i = numTags - identifiedTags; i > 0; i--) {
-						slot = RNG.generateRandomInteger(frameSize);
-						this.frame[slot]++;
+				long startTime = System.currentTimeMillis();
+				while(tagsRemaining > 0) {
+					success = 0;
+					colision = 0;
+					empty = 0;
+
+					int[] frame = new int[frameSize];
+
+					for (int i = tagsRemaining; i > 0; i--) {
+						chosenSlot = RNG.generateRandomInteger(frameSize);
+						frame[chosenSlot]++;
 					}
 
-					// Check for status phase
 					for (int i : frame) {
+						totalSlots++;
 						if (i > 1) {
+							totalCollision++;
 							colision++;
-							this.colision++;
 						}
 						else if (i == 1) {
+							totalSuccess++;
 							success++;
-							this.success++;
-							identifiedTags++;
 						}
 						else {
+							totalEmpty++;
 							empty++;
-							this.empty++;
 						}
 					}
 
-					// Estimation phase
-					if (!(identifiedTags == numTags)) {
-						this.frameSize = estimator.estimate(success, empty, colision);
-						success = 0;
-						empty = 0;
-						colision =0;
-					}
-					this.refresh();
+					tagsRemaining -= success;
+
+					frameSize = estimator.estimate(success, empty, colision);
 				}
-				identifiedTags = 0;
+				long endTime = System.currentTimeMillis() - startTime;
+				totalTime += endTime;
 			}
-			this.numSlots.add((double) ((this.empty+this.success+this.colision)/2000.0));
-			this.numSlotsEmpty.add((double) (this.empty/2000.0));
-			this.numSlotsColision.add((double) (this.colision/2000.0));
+			this.numSlots.add((double) (totalSlots/this.loops));
+			this.numSlotsEmpty.add((double) (totalEmpty/this.loops));
+			this.numSlotsColision.add((double) (totalCollision/this.loops));
+			this.identificationTime.add((double) totalTime);
 			this.tags.add((double) numTags);
-			this.numTags += increaseStep;
-			this.empty = 0;
-			this.colision = 0;
-			this.success = 0;
 		}
 	}
 
-
-	public void generateResult(){
-		results.add(new Result(colision, empty, success));
-	}
 
 	@Override
 	public void run() {
@@ -117,27 +108,20 @@ public class DFSASimulator implements Runnable {
 		long startTime = System.currentTimeMillis();
 
 		this.simulate();
-		
+
 		try {
 			XYChart chartColision = ChartUtils.createChart("Number of Tags", "Colisions Slots", numTags, 1900, this.tags.stream().mapToDouble(d -> d).toArray(), this.numSlotsColision.stream().mapToDouble(d -> d).toArray(), estimator.getName());
 			XYChart chartEmpty = ChartUtils.createChart("Number of Tags", "Empty Slots", numTags, 1200, this.tags.stream().mapToDouble(d -> d).toArray(), this.numSlotsEmpty.stream().mapToDouble(d -> d).toArray(), estimator.getName());
 			XYChart chartSlots = ChartUtils.createChart("Number of Tags", "Number of Slots", numTags, 3600, this.tags.stream().mapToDouble(d -> d).toArray(), this.numSlots.stream().mapToDouble(d -> d).toArray(), estimator.getName());
-			List<XYChart> charts = Arrays.asList(chartColision, chartEmpty, chartSlots);
+			XYChart chartTime = ChartUtils.createChart("Number of Tags", "Avg. Identification Time", numTags, 1000, this.tags.stream().mapToDouble(d -> d).toArray(), this.identificationTime.stream().mapToDouble(d -> d).toArray(), estimator.getName());
+			List<XYChart> charts = Arrays.asList(chartColision, chartEmpty, chartSlots, chartTime);
 			ChartUtils.displayChartList(charts);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		
-		Logger.log(this.numSlotsEmpty);
-
 		long endTime = System.currentTimeMillis() - startTime;
 
 		Logger.logFinishTime("Simulation", endTime);
-	}
-
-
-	private void refresh(){
-		this.frame = new int[frameSize];
 	}
 }
