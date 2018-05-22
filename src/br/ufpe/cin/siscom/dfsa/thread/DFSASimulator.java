@@ -119,9 +119,9 @@ public class DFSASimulator implements Runnable {
 			XYChart chartEficiency = ChartUtils.createChart("Number of Tags", "Eficiency", numTags, 40, this.tags.stream().mapToDouble(d -> d).toArray(), this.eficiency.stream().mapToDouble(d -> d).toArray(), estimator.getName());
 
 			List<XYChart> charts = Arrays.asList(chartColision, chartEmpty, chartSlots, chartEficiency);
-			List<XYChart> charts2 = Arrays.asList(chartTime);
 			
 			ChartUtils.displayChartList(charts);
+			ChartUtils.displayChart(chartTime);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
